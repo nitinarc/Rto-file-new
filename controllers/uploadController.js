@@ -119,19 +119,14 @@ export const downloadZip = async (req, res) => {
 
     res.download(zipPath, zipName, async () => {
       try {
-        // ✅ पूरा uploads/ folder clean करो
-        const uploadsDir = path.join(__dirname, '../uploads');
-        if (fs.existsSync(uploadsDir)) {
-          fs.rmSync(uploadsDir, { recursive: true, force: true });
-          fs.mkdirSync(uploadsDir, { recursive: true });
-          console.log('🧹 Entire uploads/ folder cleaned.');
-        }
+        // ✅ Cleanup: baseFolder + zip + temp (files only)
+        cleanup([baseFolder, zipPath, path.join('uploads', 'temp')]);
 
-        // ✅ Session Destroy
         req.session.destroy((err) => {
           if (err) console.error('Session destroy error:', err);
         });
 
+        console.log('🧹 Cleanup done (temp folder cleaned).');
       } catch (err) {
         console.error('❌ Cleanup Error:', err);
       }
@@ -141,7 +136,6 @@ export const downloadZip = async (req, res) => {
     res.status(500).send('Download error: ' + err.message);
   }
 };
-
 // ✅ Preview Bill
 export const previewBill = async (req, res) => {
   try {
